@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ajambo Kwoshaba Linda Data Visualiations</title>
+    <p>DATA SET VISUALISATION BY AJAMBO KWOSHABA LINDA</p>
+    <p> <b>BAR CHART </b> </p>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+
+<script>
+
+    var margin = {top: 20, right: 20, bottom: 70, left: 40},
+        width = 600 - margin.left - margin.right,
+        height = 300 - margin.top - margin.bottom;
+
+    // Parse the date / time
+    var	parseDate = d3.time.format("%Y-%m").parse;
+
+    var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
+
+    var y = d3.scale.linear().range([height, 0]);
+
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .orient("bottom")
+        .tickFormat(d3.time.format("%Y-%m"));
+
+    var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient("left")
+        .ticks(10);
+
+    var svg = d3.select("body").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+    d3.csv("Dataset.csv", function(error, data) {
+
+        data.forEach(function(d) {
+            d.date = parseDate(d.date);
+            d.value = +d.value;
+        });
+
+        x.domain(data.map(function(d) { return d.date; }));
+        y.domain([0, d3.max(data, function(d) { return d.value; })]);
+
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis)
+            .selectAll("text")
+            .style("text-anchor", "end")
+            .attr("dx", "-.8em")
+            .attr("dy", "-.55em")
+            .attr("transform", "rotate(-90)" );
+
+        svg.append("g")
+            .attr("class", "y axis")
+            .call(yAxis)
+            .append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 6)
+            .attr("dy", ".71em")
+            .style("text-anchor", "end")
+            .text("pumnum");
+
+        svg.selectAll("bar")
+            .data(data)
+            .enter().append("rect")
+            .style("fill", "steelblue")
+            .attr("x", function(d) { return x(d.date); })
+            .attr("width", x.rangeBand())
+            .attr("y", function(d) { return y(d.value); })
+            .attr("height", function(d) { return height - y(d.value); });
+
+    });
+
+</script>
+<p>
+<b>
+  PIE CHART
+
+</b>
+</p>
+
+<script type="text/javascript">
+
+    var w = 300,
+        h = 300,
+        r = 100,
+        color = d3.scale.category20c();
+
+    data = [{"label":"pubmain", "value":20},
+        {"label":"pubsubclass", "value":50},
+        {"label":"pumnumclaims", "value":30}];
+
+    var vis = d3.select("body")
+        .append("svg:svg")
+        .data([data])
+        .attr("width", w)
+        .attr("height", h)
+        .append("svg:g")
+        .attr("transform", "translate(" + r + "," + r + ")")
+
+    var arc = d3.svg.arc()
+        .outerRadius(r);
+
+    var pie = d3.layout.pie()
+        .value(function(d) { return d.value; });
+
+    var arcs = vis.selectAll("g.slice")
+        .data(pie)
+        .enter()
+        .append("svg:g")
+        .attr("class", "slice");
+
+    arcs.append("svg:path")
+        .attr("fill", function(d, i) { return color(i); } )
+        .attr("d", arc);
+
+    arcs.append("svg:text")
+        .attr("transform", function(d) {
+
+            d.innerRadius = 0;
+            d.outerRadius = r;
+            return "translate(" + arc.centroid(d) + ")";
+        })
+        .attr("text-anchor", "middle")
+        .text(function(d, i) { return data[i].label; });
+
+</script>
+
+<script src="//d3js.org/d3.v3.min.js"></script>
+
+
+<p> <b>
+
+    SCATTER PLOT
+
+</b>
+</p>
+
+<script>
+
+    var margin = {top: 20, right: 20, bottom: 30, left: 40},
+        width = 960 - margin.left - margin.right,
+        height = 500 - margin.top - margin.bottom;
+
+    var x = d3.scale.linear()
+        .range([0, width]);
+
+    var y = d3.scale.linear()
+        .range([height, 0]);
+
+    var z = d3.scale.category10();
+
+    var svg = d3.select("body").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    d3.csv("data.csv", function(error, data) {
+        if (error) throw error;
+
+        // Compute the series names ("y1", "y2", etc.) from the loaded CSV.
+        var seriesNames = d3.keys(data[0])
+            .filter(function(d) { return d !== "x"; })
+            .sort();
+
+        // Map the data to an array of arrays of {x, y} tuples.
+        var series = seriesNames.map(function(series) {
+            return data.map(function(d) {
+                return {x: +d.x, y: +d[series]};
+            });
+        });
+
+        // Compute the scales’ domains.
+        x.domain(d3.extent(d3.merge(series), function(d) { return d.x; })).nice();
+        y.domain(d3.extent(d3.merge(series), function(d) { return d.y; })).nice();
+
+        // Add the x-axis.
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.svg.axis().scale(x).orient("bottom"));
+
+        // Add the y-axis.
+        svg.append("g")
+            .attr("class", "y axis")
+            .call(d3.svg.axis().scale(y).orient("left"));
+
+        // Add the points!
+        svg.selectAll(".series")
+            .data(series)
+            .enter().append("g")
+            .attr("class", "series")
+            .style("fill", function(d, i) { return z(i); })
+            .selectAll(".point")
+            .data(function(d) { return d; })
+            .enter().append("circle")
+            .attr("class", "point")
+            .attr("r", 4.5)
+            .attr("cx", function(d) { return x(d.x); })
+            .attr("cy", function(d) { return y(d.y); });
+    });
+
+    d3.csv("net.csv", function(error, data) {
+        if (error) throw error;
+    });
+</script>
+
+
+</body>
+</html>
+
+
+</body>
+
+</body>
+<script src="Visual.js"> </script>
+</html>
